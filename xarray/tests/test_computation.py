@@ -1922,6 +1922,42 @@ def test_where() -> None:
     assert_identical(expected, actual)
 
 
+def test_where_keep_attrs() -> None:
+    data = xr.DataArray([1, 2], dims="x", attrs={"foo": "bar"})
+    cond = data == 1
+
+    assert xr.where(cond, -1, data).attrs == {}
+    expected = xr.DataArray([-1, 2], dims="x", attrs=data.attrs)
+    assert_identical(expected, xr.where(cond, -1, data, keep_attrs=True))
+    assert xr.where(cond, data, -1, keep_attrs=True).attrs == data.attrs
+
+    with xr.set_options(keep_attrs=True):
+        assert xr.where(cond, -1, data).attrs == data.attrs
+        assert xr.where(cond, -1, data, keep_attrs=False).attrs == {}
+        assert xr.where(data == 1, 5, 0).attrs == data.attrs
+
+
+def test_where_keep_dataset_attrs() -> None:
+    data = xr.Dataset(
+        {"value": xr.DataArray([1, 2], dims="x", attrs={"units": "m"})},
+        attrs={"source": "test"},
+    )
+    cond = xr.DataArray([True, False], dims="x")
+
+    actual = xr.where(cond, data, 0, keep_attrs=True)
+    assert actual.attrs == data.attrs
+    assert actual.value.attrs == data.value.attrs
+
+
+def test_where_keep_attrs_preserves_dimension_order() -> None:
+    cond = xr.DataArray([True, False], dims="x")
+    data = xr.DataArray([1, 2], dims="y", attrs={"foo": "bar"})
+
+    expected = xr.where(cond, data, 0).assign_attrs(data.attrs)
+    actual = xr.where(cond, data, 0, keep_attrs=True)
+    assert_identical(expected, actual)
+
+
 @pytest.mark.parametrize("use_dask", [True, False])
 @pytest.mark.parametrize("use_datetime", [True, False])
 def test_polyval(use_dask, use_datetime) -> None:
