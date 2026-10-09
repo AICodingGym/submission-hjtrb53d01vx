@@ -1749,7 +1749,7 @@ def where(cond, x, y, keep_attrs=None):
         values to choose from where `cond` is False
     keep_attrs : bool, optional
         If True, copy attributes from `x` or `y` to the result. If None,
-        use the global ``keep_attrs`` option (False by default).
+        use the global ``keep_attrs`` option (True by default).
 
     Returns
     -------
@@ -1793,7 +1793,7 @@ def where(cond, x, y, keep_attrs=None):
       * lon      (lon) int64 10 11 12
 
     >>> xr.where(y.lat < 1, y, -1)
-    <xarray.DataArray (lat: 3, lon: 3)>
+    <xarray.DataArray 'sst' (lat: 3, lon: 3)>
     array([[ 0. ,  0.1,  0.2],
            [-1. , -1. , -1. ],
            [-1. , -1. , -1. ]])
@@ -1817,7 +1817,7 @@ def where(cond, x, y, keep_attrs=None):
     """
     # alignment for three arguments is complicated, so don't support it yet
     if keep_attrs is None:
-        keep_attrs = _get_keep_attrs(default=False)
+        keep_attrs = _get_keep_attrs(default=True)
 
     if keep_attrs:
         # Attributes should come from the values, not the condition.
